@@ -42,13 +42,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Test database connection
-      run: |
-        python manage.py dbshell <<EOF
-        \c menu
-        \dt
-        EOF
-
     - name: Apply migrations for backend
       env:
         DATABASE_URL: postgres://postgres:postgres@172.17.0.3:5432/menu

@@ -21,7 +21,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: menu
+          POSTGRES_DB: test_db
         options: >-
           --health-cmd "pg_isready -U postgres -d test_db"
           --health-interval 10s
@@ -41,6 +41,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        for i in {1..10}; do
+          if pg_isready -h 127.0.0.1 -p 5432; then
+            echo "PostgreSQL is ready!"
+            break
+          fi
+          echo "Waiting for PostgreSQL..."
+          sleep 3
+        done
 
     - name: Apply migrations for backend
       env:

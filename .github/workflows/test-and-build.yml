@@ -48,16 +48,10 @@ jobs:
       working-directory: ./backend
       run: python manage.py migrate
 
-    - name: Apply migrations for backend2
-      env:
-        DATABASE_URL: postgres://bd:262@172.17.0.3:5432/menu
-      working-directory: ./backend2
-      run: python manage.py migrate
-
     - name: Run tests
       env:
-        DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/test_db
-      run: pytest --ds=project_name.settings --cov=.
+        DATABASE_URL: postgres://bd:262@172.17.0.3:5432/menu
+      run: pytest --ds=backend.settings --cov=.
 
   build:
     name: Build Docker Container

@@ -45,7 +45,7 @@ jobs:
     - name: Run tests
       env:
         DATABASE_URL: postgres://bd:262@172.17.0.3:5432/menu
-      run: pytest --ds=backend.settings --cov=.
+      run: pytest --ds=backend.backend.settings --cov=.
 
   build:
     name: Build Docker Container

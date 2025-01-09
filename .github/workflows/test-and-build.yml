@@ -15,7 +15,7 @@ jobs:
 
     services:
       db:
-        image: postgres:13
+        image: postgres:17.2
         ports:
           - 5432:5432
         env:
@@ -23,7 +23,7 @@ jobs:
           POSTGRES_PASSWORD: 262
           POSTGRES_DB: menu
         options: >-
-          --health-cmd "pg_isready -U bd -d menu"
+          --health-cmd "psql -h 172.17.0.3 -U bd -d menu"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -42,16 +42,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Check PostgreSQL Connection
-      run: |
-        pg_isready -h db -p 5432 -U bd
-
     - name: Run tests
       env:
-           DJANGO_SETTINGS_MODULE: backend.settings
-           PYTHONPATH: ${{ github.workspace }}/backend
-      run: |
-        pytest --cov=.
+        DATABASE_URL: postgres://bd:262@db:5432/menu
+      run: pytest --ds=backend.backend.settings --cov=.
 
   build:
     name: Build Docker Container

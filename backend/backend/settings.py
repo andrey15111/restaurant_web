@@ -60,7 +60,7 @@ DATABASES = {
         'NAME': 'menu',
         'USER': 'bd',
         'PASSWORD': '262',
-        'HOST': 'db',
+        'HOST': '172.17.0.3',
         'PORT': '5432',
     }
 }

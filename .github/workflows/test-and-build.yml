@@ -44,7 +44,7 @@ jobs:
 
     - name: Check PostgreSQL Connection
       run: |
-        pg_isready -h 172.17.0.3 -p 5432 -U bd
+        pg_isready -h db -p 5432 -U bd
 
     - name: Run tests
       env:

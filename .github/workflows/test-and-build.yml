@@ -44,8 +44,10 @@ jobs:
 
     - name: Run tests
       env:
-        DATABASE_URL: postgres://bd:262@172.17.0.3:5432/menu
-      run: pytest --ds=backend.backend.settings --cov=.
+          DJANGO_SETTINGS_MODULE: backend.backend.settings
+          PYTHONPATH: ${{ github.workspace }}/backend/backend
+      run: |
+        pytest --cov=.
 
   build:
     name: Build Docker Container

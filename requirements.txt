@@ -8,3 +8,5 @@ celery
 redis
 django_prometheus
 pytest
+pytest-django
+pytest-cov

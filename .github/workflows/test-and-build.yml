@@ -43,8 +43,8 @@ jobs:
         pip install -r requirements.txt
 
     - name: Check PostgreSQL Connection
-        run: |
-          pg_isready -h 172.17.0.3 -p 5432 -U bd
+      run: |
+        pg_isready -h 172.17.0.3 -p 5432 -U bd
 
     - name: Run tests
       env:

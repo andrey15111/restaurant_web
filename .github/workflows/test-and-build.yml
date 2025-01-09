@@ -42,12 +42,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Apply migrations for backend
-      env:
-        DATABASE_URL: postgres://bd:262@172.17.0.3:5432/menu
-      working-directory: ./backend
-      run: python manage.py migrate
-
     - name: Run tests
       env:
         DATABASE_URL: postgres://bd:262@172.17.0.3:5432/menu

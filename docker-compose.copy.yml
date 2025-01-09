@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+  
+  db:
+    image: postgres:17.2
+    environment:
+      POSTGRES_DB: menu
+      POSTGRES_USER: bd
+      POSTGRES_PASSWORD: 262
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+  
+  backend1:
+    image: durkaepanayal/restaurant:backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend1
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', '1')\" &&
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    entrypoint: ["./wait-for-it.sh", "db:5432", "--", "sh", "-c", "python manage.py migrate && python manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', '1')\" && python manage.py runserver 0.0.0.0:8000"]
+    networks:
+      - app_network
+
+  backend2:
+    image: durkaepanayal/restaurant:backend2
+    build:
+      context: ./backend2
+      dockerfile: Dockerfile.backend2
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', '1')\" &&
+             python manage.py runserver 0.0.0.0:8001"
+
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+      - redis
+    entrypoint: ["./wait-for-it.sh", "db:5432", "--", "sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8001"]
+    networks:
+      - app_network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - /mnt/common_volume/grafana/grafana-config:/etc/grafana
+      - /mnt/common_volume/grafana/grafana-data:/var/lib/grafana
+    user: "root"
+    environment:
+      GF_RENDERING_SERVER_URL: "http://grafana-image-renderer:8081/render"
+      GF_RENDERING_CALLBACK_URL: "http://grafana:3000/"
+      GF_UNIFIED_ALERTING_SCREENSHOTS_CAPTURE: "true"
+      GF_LOG_FILTERS: "rendering:debug"
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        order: stop-first
+      resources:
+        limits:
+          memory: 1024M
+      placement:
+        constraints:
+          - "node.labels.TAG==aaa"
+      restart_policy:
+        condition: on-failure
+    networks:
+      - app_network
+                  
+  prometheus:
+    image: "prom/prometheus:v2.48.0"
+    ports:
+      - 9090:9090
+    volumes:
+      - /mnt/common_volume/swarm/grafana/config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - /mnt/common_volume/grafana/prometheus-data:/prometheus
+    user: "root"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+      - "--storage.tsdb.retention.time=7d"
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        order: stop-first
+      resources:
+        limits:
+          memory: 1024M
+      placement:
+        constraints:
+          - "node.labels.TAG==aaa"
+      restart_policy:
+        condition: on-failure
+    networks:
+      - app_network
+
+#протестить необходимость этих строк
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  app_network:
+    driver: overlay
+
